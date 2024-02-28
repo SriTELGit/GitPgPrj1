@@ -5,60 +5,53 @@ class App{
 		const container = document.createElement( 'div' );
 		document.body.appendChild( container );
 
-		this.clock = new THREE.Clock();
+		this.mCamera = new THREE.PerspectiveCamera(60, window.innerWidth/window.innerHeight, 0.1, 100);
+		this.mCamera.position.set(0,1,50);
 
-		this.camera = new THREE.PerspectiveCamera(60, window.innerWidth/window.innerHeight, 0.1, 100);
-		this.camera.position.set(0,1,50);
+		this.mScene = new THREE.Scene();
+		this.mScene.background = new THREE.Color(0x444444);
 
-		this.scene = new THREE.Scene();
-		this.scene.background = new THREE.Color(0x444444);
+		this.mRenderer = new THREE.WebGLRenderer({antialias: true, outputEncoding: THREE.SRGBColorSpace });
+		this.mRenderer.setPixelRatio(Math.min(window.devicePixelRatio,2));
+		this.mRenderer.setSize(window.innerWidth, window.innerHeight);
+		this.mRenderer.physicallyCorrectLights = true; 
 
-		const ambient = new THREE.HemisphereLight(0xffffbb, 0x080820, 0.3);
-		this.scene.add(ambient);
+		container.appendChild(this.mRenderer.domElement);
 
-		const light = new THREE.DirectionalLight(0xffffff, 1.5);
-		light.position.set(0, 1, 1);
-		this.scene.add(light);
+		this.SetupWorld();
 
-		this.renderer = new THREE.WebGLRenderer({antialias: true, outputEncoding: THREE.SRGBColorSpace });
-		this.renderer.setPixelRatio(Math.min(window.devicePixelRatio,2));
-		this.renderer.setSize(window.innerWidth, window.innerHeight);
-		//this.renderer.outputEncoding - THREE.sRGBEncoding; //deprecated 
-		this.renderer.physicallyCorrectLights = true; //check this
-		container.appendChild(this.renderer.domElement);
-
-
-		this.setEnvironment1();
-		
-
-        window.addEventListener('resize', this.resize.bind(this) );
+        window.addEventListener('resize', this.Resize.bind(this) );
 	}	
-    
-    resize(){
-		this.camera.aspect = window.innerWidth / window.innerHeight;
-		this.camera.updateProjectionMatrix();
-		this.renderer.setSize(window.innerWidth, window.innerHeight);
 
-    }
-    
-	render( ) {   
-		const dt = this.clock.getDelta();
-		
-		this.renderer.render(this.scene, this.camera);
-    }
+    SetupWorld(){
 
+		this.mRenderer.setAnimationLoop( this.Render.bind(this) );
 
-	setEnvironment1(){
+		const ambient = new THREE.HemisphereLight(0xffffbb, 0x080820, 0.2);
+		this.mScene.add(ambient);
 
-		this.renderer.setAnimationLoop( this.render.bind(this) );
+		const light = new THREE.DirectionalLight(0xeeeeee, 1.5);
+		light.position.set(0, 1, 1);
+		this.mScene.add(light);
+
 
 		const geometry = new THREE.TorusKnotGeometry( 10, 3, 100, 16 ); 
 		const material = new THREE.MeshStandardMaterial({ color: 0xFF0000, roughness: 0.1, metalness: 0.1 });
 
-		this.mesh = new THREE.Mesh(geometry, material);
-		this.scene.add(this.mesh);
+		this.mMesh = new THREE.Mesh(geometry, material);
+		this.mScene.add(this.mMesh);
 
 	}
+    
+    Resize(){
+		this.mCamera.aspect = window.innerWidth / window.innerHeight;
+		this.mCamera.updateProjectionMatrix();
+		this.mRenderer.setSize(window.innerWidth, window.innerHeight);
+    }
+    
+	Render( ) {   
+		this.mRenderer.render(this.mScene, this.mCamera);
+    }
 
 	
 }
